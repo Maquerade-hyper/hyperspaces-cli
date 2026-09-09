@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Hyperspace</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/css/dashboard.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+    <!-- ========================= -->
+    <!-- SIDEBAR -->
+    <!-- ========================= -->
+
+    <aside class="sidebar">
+
+
+        <div class="brand">
+
+            <div class="brand-mark">
+                H
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    Hyperspace
+                </div>
+
+                <div class="brand-subtitle">
+                    Compute Mesh
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="navigation">
+
+
+            <button
+                class="nav-item active"
+                data-view="overview"
+            >
+                Overview
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="nodes"
+            >
+                Nodes
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="resources"
+            >
+                Resources
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="jobs"
+            >
+                Jobs
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="scheduler"
+            >
+                Scheduler
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="execution"
+            >
+                Execution
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-view="fault-tolerant"
+            >
+                Fault Tolerance
+            </button>
+
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="connection-dot"></div>
+
+            <span id="sidebar-controller-status">
+                Controller Connected
+            </span>
+
+        </div>
+
+
+    </aside>
+
+
+    <!-- ========================= -->
+    <!-- MAIN -->
+    <!-- ========================= -->
+
+    <main class="main">
+
+
+        <header class="topbar">
+
+
+            <div>
+
+                <h1 id="page-title">
+                    Overview
+                </h1>
+
+                <p id="page-subtitle">
+                    Hyperspace compute fabric
+                </p>
+
+            </div>
+
+
+            <div class="controller-status">
+
+                <span class="status-dot"></span>
+
+                <span id="controller-status">
+                    Checking controller...
+                </span>
+
+            </div>
+
+
+        </header>
+
+
+        <section class="content">
+
+
+            <!-- ========================= -->
+            <!-- OVERVIEW -->
+            <!-- ========================= -->
+
+            <div
+                id="view-overview"
+                class="dashboard-view"
+            >
+
+
+                <div class="welcome-card">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            HYPERSPACE CONTROL PLANE
+                        </span>
+
+                        <h2>
+                            Your compute mesh at a glance.
+                        </h2>
+
+                        <p>
+                            The dashboard is connected to the
+                            Hyperspace controller API.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="stats-grid">
+
+
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            Nodes
+                        </span>
+
+                        <strong id="node-count">
+                            —
+                        </strong>
+
+                        <span class="stat-description">
+                            Connected nodes
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            CPU Threads
+                        </span>
+
+                        <strong id="cpu-threads">
+                            —
+                        </strong>
+
+                        <span class="stat-description">
+                            Cluster capacity
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            RAM
+                        </span>
+
+                        <strong id="ram-total">
+                            —
+                        </strong>
+
+                        <span class="stat-description">
+                            Total cluster memory
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            GPUs
+                        </span>
+
+                        <strong id="gpu-count">
+                            —
+                        </strong>
+
+                        <span class="stat-description">
+                            Available accelerators
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                System Status
+                            </h3>
+
+                            <p>
+                                Live connection to the controller
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="system-status"
+                        class="system-status"
+                    >
+                        Loading...
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- NODES -->
+            <!-- ========================= -->
+
+            <div
+                id="view-nodes"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            COMPUTE MESH
+                        </span>
+
+                        <h2>
+                            Nodes
+                        </h2>
+
+                        <p>
+                            Machines participating in the
+                            Hyperspace resource fabric.
+                        </p>
+
+                    </div>
+
+
+                    <div class="node-summary">
+
+                        <strong id="nodes-page-count">
+                            —
+                        </strong>
+
+                        <span>
+                            nodes
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <div
+                    id="nodes-container"
+                    class="nodes-container"
+                >
+
+                    <div class="empty-state">
+                        Loading nodes...
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- RESOURCES -->
+            <!-- ========================= -->
+
+            <div
+                id="view-resources"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            RESOURCE FABRIC
+                        </span>
+
+                        <h2>
+                            Resources
+                        </h2>
+
+                        <p>
+                            Live CPU, RAM, GPU and VRAM capacity
+                            across the compute mesh.
+                        </p>
+
+                    </div>
+
+
+                    <div class="resource-summary">
+
+                        <span class="resource-summary-label">
+                            Resource Pool
+                        </span>
+
+                        <strong id="resource-node-count">
+                            —
+                        </strong>
+
+                        <span>
+                            nodes
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- Cluster capacity -->
+
+                <div class="resource-section">
+
+
+                    <div class="resource-section-header">
+
+                        <div>
+
+                            <h3>
+                                Cluster Capacity
+                            </h3>
+
+                            <p>
+                                Combined resources available to Hyperspace.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="resource-grid">
+
+
+                        <div class="resource-card">
+
+                            <div class="resource-card-top">
+
+                                <span class="resource-label">
+                                    CPU
+                                </span>
+
+                                <span class="resource-icon">
+                                    CPU
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="resource-cpu-total"
+                                class="resource-value"
+                            >
+                                —
+                            </strong>
+
+                            <span class="resource-description">
+                                Total CPU threads
+                            </span>
+
+                            <div class="resource-bar">
+
+                                <div
+                                    id="resource-cpu-bar"
+                                    class="resource-bar-fill"
+                                ></div>
+
+                            </div>
+
+                            <div class="resource-meta">
+
+                                <span>
+                                    Available
+                                </span>
+
+                                <strong id="resource-cpu-available">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="resource-card">
+
+                            <div class="resource-card-top">
+
+                                <span class="resource-label">
+                                    RAM
+                                </span>
+
+                                <span class="resource-icon">
+                                    RAM
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="resource-ram-total"
+                                class="resource-value"
+                            >
+                                —
+                            </strong>
+
+                            <span class="resource-description">
+                                Total system memory
+                            </span>
+
+                            <div class="resource-bar">
+
+                                <div
+                                    id="resource-ram-bar"
+                                    class="resource-bar-fill"
+                                ></div>
+
+                            </div>
+
+                            <div class="resource-meta">
+
+                                <span>
+                                    Available
+                                </span>
+
+                                <strong id="resource-ram-available">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="resource-card">
+
+                            <div class="resource-card-top">
+
+                                <span class="resource-label">
+                                    GPUs
+                                </span>
+
+                                <span class="resource-icon">
+                                    GPU
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="resource-gpu-total"
+                                class="resource-value"
+                            >
+                                —
+                            </strong>
+
+                            <span class="resource-description">
+                                Total GPU devices
+                            </span>
+
+                            <div class="resource-bar">
+
+                                <div
+                                    id="resource-gpu-bar"
+                                    class="resource-bar-fill"
+                                ></div>
+
+                            </div>
+
+                            <div class="resource-meta">
+
+                                <span>
+                                    Available
+                                </span>
+
+                                <strong id="resource-gpu-available">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="resource-card">
+
+                            <div class="resource-card-top">
+
+                                <span class="resource-label">
+                                    VRAM
+                                </span>
+
+                                <span class="resource-icon">
+                                    VRAM
+                                </span>
+
+                            </div>
+
+                            <strong
+                                id="resource-vram-total"
+                                class="resource-value"
+                            >
+                                —
+                            </strong>
+
+                            <span class="resource-description">
+                                Total GPU memory
+                            </span>
+
+                            <div class="resource-bar">
+
+                                <div
+                                    id="resource-vram-bar"
+                                    class="resource-bar-fill"
+                                ></div>
+
+                            </div>
+
+                            <div class="resource-meta">
+
+                                <span>
+                                    Available
+                                </span>
+
+                                <strong id="resource-vram-available">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- Node resources -->
+
+                <div class="resource-section">
+
+
+                    <div class="resource-section-header">
+
+                        <div>
+
+                            <h3>
+                                Node Resources
+                            </h3>
+
+                            <p>
+                                Resources reported by each mesh node.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="resource-nodes-container"
+                        class="resource-nodes-container"
+                    >
+
+                        <div class="empty-state">
+                            Loading resources...
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- JOBS -->
+            <!-- ========================= -->
+
+            <div
+                id="view-jobs"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            COMPUTE WORKLOADS
+                        </span>
+
+                        <h2>
+                            Jobs
+                        </h2>
+
+                        <p>
+                            Submit and monitor workloads running
+                            through the Hyperspace compute fabric.
+                        </p>
+
+                    </div>
+
+
+                    <div class="job-summary">
+
+                        <strong id="jobs-page-count">
+                            —
+                        </strong>
+
+                        <span>
+                            jobs
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- Submit job -->
+
+                <div class="section-card job-submit-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Submit Test Job
+                            </h3>
+
+                            <p>
+                                Submit a test workload to the persistent
+                                Hyperspace job queue.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="job-form">
+
+
+                        <div class="form-group">
+
+                            <label for="job-message">
+                                Message
+                            </label>
+
+                            <input
+                                id="job-message"
+                                type="text"
+                                value="M16.4-DASHBOARD-JOB"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="job-priority">
+                                Priority
+                            </label>
+
+                            <input
+                                id="job-priority"
+                                type="number"
+                                value="100"
+                                min="0"
+                            >
+
+                        </div>
+
+
+                        <button
+                            id="submit-job-button"
+                            class="primary-button"
+                        >
+                            Submit Job
+                        </button>
+
+
+                    </div>
+
+
+                    <div
+                        id="job-submit-status"
+                        class="form-status"
+                    ></div>
+
+
+                </div>
+
+
+                <!-- Job queue -->
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Job Queue
+                            </h3>
+
+                            <p>
+                                Persistent workloads registered with
+                                the controller.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="jobs-container"
+                        class="jobs-container"
+                    >
+
+                        <div class="empty-state">
+                            Loading jobs...
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- SCHEDULER -->
+            <!-- ========================= -->
+
+            <div
+                id="view-scheduler"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            RESOURCE-AWARE SCHEDULING
+                        </span>
+
+                        <h2>
+                            Scheduler
+                        </h2>
+
+                        <p>
+                            Select a queued job and ask Hyperspace
+                            to find the best available node.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Schedule Job
+                            </h3>
+
+                            <p>
+                                The controller evaluates the resource
+                                fabric and creates a node assignment.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="scheduler-form">
+
+
+                        <div class="form-group">
+
+                            <select
+                                id="scheduler-job-select"
+                            >
+
+                                <option value="">
+                                    Select a queued job
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            id="schedule-job-button"
+                            class="primary-button"
+                        >
+                            Find Best Node
+                        </button>
+
+
+                    </div>
+
+
+                    <div
+                        id="scheduler-status"
+                        class="form-status"
+                    ></div>
+
+
+                    <div
+                        id="assignment-container"
+                        class="assignment-container"
+                    >
+
+                        <div class="empty-state">
+                            No assignment requested yet.
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Scheduling Pipeline
+                            </h3>
+
+                            <p>
+                                Live placement flow used by Hyperspace.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline">
+
+
+                        <div class="pipeline-step">
+                            <span>1</span>
+                            <strong>Job</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>2</span>
+                            <strong>Matching</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>3</span>
+                            <strong>Scoring</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>4</span>
+                            <strong>Assignment</strong>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- EXECUTION -->
+            <!-- ========================= -->
+
+            <div
+                id="view-execution"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            WORKLOAD EXECUTION
+                        </span>
+
+                        <h2>
+                            Execution
+                        </h2>
+
+                        <p>
+                            Execute scheduled workloads and inspect
+                            their returned results.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Execute Job
+                            </h3>
+
+                            <p>
+                                Select a job and execute it through
+                                the Hyperspace execution pipeline.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="scheduler-form">
+
+
+                        <div class="form-group">
+
+                            <select
+                                id="execution-job-select"
+                            >
+
+                                <option value="">
+                                    Select an assigned job
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            id="execute-job-button"
+                            class="primary-button"
+                        >
+                            Execute Job
+                        </button>
+
+
+                    </div>
+
+
+                    <div
+                        id="execution-status"
+                        class="form-status"
+                    ></div>
+
+
+                    <div
+                        id="execution-result-container"
+                        class="assignment-container"
+                    >
+
+                        <div class="empty-state">
+                            No execution started yet.
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Execution Pipeline
+                            </h3>
+
+                            <p>
+                                Current execution flow through Hyperspace.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline">
+
+
+                        <div class="pipeline-step">
+                            <span>1</span>
+                            <strong>Job</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>2</span>
+                            <strong>Assignment</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>3</span>
+                            <strong>Worker</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>4</span>
+                            <strong>Result</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>5</span>
+                            <strong>Artifact</strong>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- FAULT TOLERANCE -->
+            <!-- ========================= -->
+
+            <div
+                id="view-fault-tolerant"
+                class="dashboard-view hidden"
+            >
+
+
+                <div class="page-introduction">
+
+
+                    <div>
+
+                        <span class="eyebrow">
+                            FAULT TOLERANCE
+                        </span>
+
+                        <h2>
+                            Fault-Tolerant Execution
+                        </h2>
+
+                        <p>
+                            Execute a workload with node failure
+                            handling and recovery.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Execute Fault Tolerantly
+                            </h3>
+
+                            <p>
+                                Select a job and allow Hyperspace
+                                to execute it against candidate nodes.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="scheduler-form">
+
+
+                        <div class="form-group">
+
+                            <select
+                                id="fault-tolerant-job-select"
+                            >
+
+                                <option value="">
+                                    Select a job
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            id="fault-tolerant-execute-button"
+                            class="primary-button"
+                        >
+                            Execute Fault Tolerantly
+                        </button>
+
+
+                    </div>
+
+
+                    <div
+                        id="fault-tolerant-status"
+                        class="form-status"
+                    ></div>
+
+
+                    <div
+                        id="fault-tolerant-result-container"
+                        class="assignment-container"
+                    >
+
+                        <div class="empty-state">
+                            No fault-tolerant execution started yet.
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="section-card">
+
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h3>
+                                Recovery Pipeline
+                            </h3>
+
+                            <p>
+                                Fault-aware execution path.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline">
+
+
+                        <div class="pipeline-step">
+                            <span>1</span>
+                            <strong>Job</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>2</span>
+                            <strong>Candidate Nodes</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>3</span>
+                            <strong>Failure Detection</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>4</span>
+                            <strong>Retry</strong>
+                        </div>
+
+
+                        <div class="pipeline-arrow">
+                            →
+                        </div>
+
+
+                        <div class="pipeline-step">
+                            <span>5</span>
+                            <strong>Result</strong>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+</div>
+
+
+<script src="/static/js/dashboard.js"></script>
+
+
+</body>
+
+</html>

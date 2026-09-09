@@ -1,0 +1,1675 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: #e8edf5;
+    background: #090c12;
+}
+
+body {
+    min-height: 100vh;
+    background: #090c12;
+}
+
+button {
+    font: inherit;
+}
+
+.app {
+    min-height: 100vh;
+    display: flex;
+}
+
+
+/* Sidebar */
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 24px 16px;
+
+    background: #0d1119;
+    border-right: 1px solid #1d2430;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 4px 8px 28px;
+}
+
+.brand-mark {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #090c12;
+
+    font-weight: 800;
+    font-size: 20px;
+}
+
+.brand-name {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.brand-subtitle {
+    margin-top: 2px;
+
+    color: #7e899a;
+
+    font-size: 11px;
+}
+
+
+/* Navigation */
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-item {
+    width: 100%;
+
+    padding: 11px 13px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #8994a5;
+
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.nav-item:hover {
+    background: #151b25;
+    color: #e8edf5;
+}
+
+.nav-item.active {
+    background: #1a212d;
+    color: #ffffff;
+}
+
+
+.sidebar-footer {
+    margin-top: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 14px 10px;
+
+    color: #788496;
+    font-size: 12px;
+}
+
+.connection-dot,
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #6ee7b7;
+}
+
+
+/* Main */
+
+.main {
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar {
+    min-height: 86px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 34px;
+
+    border-bottom: 1px solid #1d2430;
+    background: #0b0f16;
+}
+
+.topbar h1 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.topbar p {
+    margin-top: 4px;
+
+    color: #7f8a9b;
+    font-size: 13px;
+}
+
+.controller-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #9ca8b8;
+    font-size: 12px;
+}
+
+
+/* Content */
+
+.content {
+    padding: 32px 34px;
+
+    max-width: 1400px;
+}
+
+
+/* Welcome */
+
+.welcome-card {
+    padding: 30px;
+
+    border: 1px solid #202936;
+    border-radius: 14px;
+
+    background: #0f141d;
+}
+
+.eyebrow {
+    color: #7e899a;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.welcome-card h2 {
+    margin-top: 10px;
+
+    font-size: 26px;
+    line-height: 1.25;
+}
+
+.welcome-card p {
+    margin-top: 8px;
+
+    color: #8c97a8;
+    font-size: 13px;
+}
+
+
+/* Statistics */
+
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-top: 18px;
+}
+
+.stat-card {
+    padding: 20px;
+
+    border: 1px solid #202936;
+    border-radius: 12px;
+
+    background: #0f141d;
+}
+
+.stat-label {
+    display: block;
+
+    color: #7f8a9b;
+
+    font-size: 12px;
+}
+
+.stat-card strong {
+    display: block;
+
+    margin-top: 10px;
+
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.stat-description {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #687486;
+
+    font-size: 11px;
+}
+
+
+/* Status */
+
+.section-card {
+    margin-top: 18px;
+
+    border: 1px solid #202936;
+    border-radius: 12px;
+
+    background: #0f141d;
+}
+
+.section-header {
+    padding: 20px;
+
+    border-bottom: 1px solid #202936;
+}
+
+.section-header h3 {
+    font-size: 15px;
+}
+
+.section-header p {
+    margin-top: 4px;
+
+    color: #717d8e;
+
+    font-size: 12px;
+}
+
+.system-status {
+    padding: 20px;
+
+    color: #a8b2c1;
+
+    font-size: 13px;
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .topbar {
+        padding: 18px 20px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+/* ========================= */
+/* Dashboard Views */
+/* ========================= */
+
+.hidden {
+    display: none !important;
+}
+
+.dashboard-view {
+    width: 100%;
+}
+
+
+/* ========================= */
+/* Page Introduction */
+/* ========================= */
+
+.page-introduction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+.page-introduction h2 {
+    margin-top: 8px;
+
+    font-size: 26px;
+    line-height: 1.25;
+}
+
+.page-introduction p {
+    margin-top: 7px;
+
+    color: #7f8a9b;
+    font-size: 13px;
+}
+
+.node-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+
+    padding: 12px 16px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #0f141d;
+
+    color: #7f8a9b;
+    font-size: 12px;
+}
+
+.node-summary strong {
+    color: #e8edf5;
+
+    font-size: 20px;
+}
+
+
+/* ========================= */
+/* Nodes */
+/* ========================= */
+
+.nodes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.node-card {
+    padding: 22px;
+
+    border: 1px solid #202936;
+    border-radius: 12px;
+
+    background: #0f141d;
+}
+
+.node-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.node-identity {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+
+    gap: 13px;
+}
+
+.node-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid #303a4a;
+    border-radius: 10px;
+
+    background: #171e29;
+
+    color: #e8edf5;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.node-identity h3 {
+    font-size: 15px;
+    font-weight: 650;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.node-id {
+    display: block;
+
+    max-width: 500px;
+
+    margin-top: 4px;
+
+    color: #687486;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 10px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.node-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    flex-shrink: 0;
+
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.5px;
+}
+
+.node-status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+.node-online {
+    color: #9de5c5;
+}
+
+.node-online .node-status-dot {
+    background: #6ee7b7;
+}
+
+.node-offline {
+    color: #e7a7a7;
+}
+
+.node-offline .node-status-dot {
+    background: #e57373;
+}
+
+
+/* ========================= */
+/* Node Details */
+/* ========================= */
+
+.node-details {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin-top: 20px;
+    padding-top: 18px;
+
+    border-top: 1px solid #202936;
+}
+
+.node-detail {
+    min-width: 0;
+}
+
+.node-detail span {
+    display: block;
+
+    color: #687486;
+
+    font-size: 11px;
+}
+
+.node-detail strong {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #b9c3d1;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ========================= */
+/* Empty / Error */
+/* ========================= */
+
+.empty-state {
+    padding: 42px 20px;
+
+    border: 1px dashed #283241;
+    border-radius: 12px;
+
+    color: #737f90;
+
+    text-align: center;
+    font-size: 13px;
+}
+
+.error-state {
+    color: #d99b9b;
+}
+
+
+/* ========================= */
+/* Placeholder */
+/* ========================= */
+
+.placeholder-card {
+    padding: 30px;
+
+    border: 1px solid #202936;
+    border-radius: 12px;
+
+    background: #0f141d;
+}
+
+.placeholder-card h2 {
+    margin-top: 9px;
+
+    font-size: 25px;
+}
+
+.placeholder-card p {
+    margin-top: 8px;
+
+    color: #7f8a9b;
+
+    font-size: 13px;
+}
+
+
+/* ========================= */
+/* Responsive Nodes */
+/* ========================= */
+
+@media (max-width: 800px) {
+
+    .node-details {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .page-introduction {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .node-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .node-status {
+        padding-left: 55px;
+    }
+
+    .node-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+/* ========================= */
+/* Resource Fabric */
+/* ========================= */
+
+.resource-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+
+    padding: 12px 16px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #0f141d;
+
+    color: #7f8a9b;
+
+    font-size: 12px;
+}
+
+.resource-summary strong {
+    color: #e8edf5;
+
+    font-size: 20px;
+}
+
+.resource-summary-label {
+    margin-right: 4px;
+}
+
+
+/* Resource sections */
+
+.resource-section {
+    margin-top: 20px;
+
+    border: 1px solid #202936;
+    border-radius: 12px;
+
+    background: #0f141d;
+}
+
+.resource-section-header {
+    padding: 20px;
+
+    border-bottom: 1px solid #202936;
+}
+
+.resource-section-header h3 {
+    font-size: 15px;
+}
+
+.resource-section-header p {
+    margin-top: 5px;
+
+    color: #717d8e;
+
+    font-size: 12px;
+}
+
+
+/* Cluster resource cards */
+
+.resource-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+
+    padding: 16px;
+}
+
+.resource-card {
+    padding: 18px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #111721;
+}
+
+.resource-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.resource-label {
+    color: #8994a5;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.resource-icon {
+    padding: 4px 7px;
+
+    border: 1px solid #293342;
+    border-radius: 5px;
+
+    color: #687486;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 8px;
+}
+
+.resource-value {
+    display: block;
+
+    margin-top: 13px;
+
+    color: #e8edf5;
+
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.resource-description {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #687486;
+
+    font-size: 11px;
+}
+
+
+/* Resource bar */
+
+.resource-bar {
+    height: 5px;
+
+    margin-top: 16px;
+
+    overflow: hidden;
+
+    border-radius: 5px;
+
+    background: #202936;
+}
+
+.resource-bar-fill {
+    height: 100%;
+
+    width: 0%;
+
+    border-radius: inherit;
+
+    background: #7d8797;
+
+    transition:
+        width 0.3s ease;
+}
+
+.resource-meta {
+    display: flex;
+    justify-content: space-between;
+
+    margin-top: 9px;
+
+    color: #687486;
+
+    font-size: 10px;
+}
+
+.resource-meta strong {
+    color: #aeb8c6;
+
+    font-weight: 500;
+}
+
+
+/* Per-node resources */
+
+.resource-nodes-container {
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+
+    padding: 16px;
+}
+
+.resource-node-card {
+    padding: 20px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #111721;
+}
+
+.resource-node-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.resource-node-title {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.resource-node-title h3 {
+    color: #e8edf5;
+
+    font-size: 14px;
+}
+
+.resource-node-title span {
+    display: block;
+
+    max-width: 600px;
+
+    margin-top: 4px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #687486;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 9px;
+}
+
+
+/* Node resource grid */
+
+.node-resource-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.node-resource-item {
+    padding: 14px;
+
+    border: 1px solid #202936;
+    border-radius: 8px;
+
+    background: #0d121a;
+}
+
+.node-resource-item > span {
+    display: block;
+
+    color: #687486;
+
+    font-size: 10px;
+}
+
+.node-resource-item strong {
+    display: block;
+
+    margin-top: 7px;
+
+    color: #d6dde7;
+
+    font-size: 14px;
+}
+
+.node-resource-item small {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #697587;
+
+    font-size: 9px;
+}
+
+
+/* GPU list */
+
+.gpu-list {
+    margin-top: 12px;
+
+    border-top: 1px solid #202936;
+}
+
+.gpu-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1fr)
+        minmax(180px, 1fr)
+        45px;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #1a222d;
+}
+
+.gpu-row:last-child {
+    border-bottom: 0;
+}
+
+.gpu-row strong {
+    display: block;
+
+    color: #bfc8d5;
+
+    font-size: 11px;
+}
+
+.gpu-row span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #687486;
+
+    font-size: 9px;
+}
+
+.gpu-vram > span {
+    margin: 0;
+
+    text-align: right;
+}
+
+.gpu-bar {
+    height: 4px;
+
+    margin-top: 7px;
+
+    overflow: hidden;
+
+    border-radius: 4px;
+
+    background: #202936;
+}
+
+.gpu-bar-fill {
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: #7d8797;
+
+    transition:
+        width 0.3s ease;
+}
+
+.gpu-utilization {
+    color: #aeb8c6;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 10px;
+
+    text-align: right;
+}
+
+.gpu-empty {
+    padding: 14px 0;
+
+    color: #687486;
+
+    font-size: 11px;
+}
+
+
+/* Resource responsive */
+
+@media (max-width: 1050px) {
+
+    .resource-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .node-resource-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .resource-summary {
+        margin-top: 5px;
+    }
+
+    .resource-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .node-resource-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gpu-row {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+    .gpu-vram > span {
+        text-align: left;
+    }
+
+    .gpu-utilization {
+        text-align: left;
+    }
+
+}
+
+
+
+
+
+
+/* ========================= */
+/* Jobs */
+/* ========================= */
+
+.job-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+
+    padding: 12px 16px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #0f141d;
+
+    color: #7f8a9b;
+    font-size: 12px;
+}
+
+.job-summary strong {
+    color: #e8edf5;
+    font-size: 20px;
+}
+
+
+.job-submit-card {
+    margin-top: 20px;
+}
+
+
+.job-form,
+.scheduler-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+
+    padding: 18px;
+}
+
+
+.form-group {
+    flex: 1;
+}
+
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #7f8a9b;
+
+    font-size: 11px;
+}
+
+
+.form-group input,
+.form-group select {
+    width: 100%;
+
+    height: 40px;
+
+    padding: 0 12px;
+
+    border: 1px solid #293342;
+    border-radius: 7px;
+
+    outline: none;
+
+    background: #0d121a;
+    color: #dce3ed;
+
+    font: inherit;
+    font-size: 12px;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #4b586b;
+}
+
+
+.primary-button,
+.secondary-button {
+    height: 40px;
+
+    padding: 0 16px;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.primary-button {
+    border: 1px solid #e1e7ef;
+
+    background: #e1e7ef;
+    color: #0b0f16;
+}
+
+
+.primary-button:hover {
+    background: #ffffff;
+}
+
+
+.primary-button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+
+.secondary-button {
+    border: 1px solid #293342;
+
+    background: #151b24;
+    color: #aab5c4;
+}
+
+
+.secondary-button:hover {
+    background: #1c2430;
+    color: #e4e9f0;
+}
+
+
+.form-status {
+    min-height: 18px;
+
+    padding: 0 18px 16px;
+
+    color: #7f8a9b;
+
+    font-size: 11px;
+}
+
+
+.jobs-container {
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+
+    padding: 16px;
+}
+
+
+.job-card {
+    padding: 18px;
+
+    border: 1px solid #202936;
+    border-radius: 10px;
+
+    background: #111721;
+}
+
+
+.job-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+
+.job-identity {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+
+.job-icon {
+    width: 40px;
+    height: 40px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border: 1px solid #303a4a;
+    border-radius: 9px;
+
+    background: #171e29;
+
+    color: #d9e0ea;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.job-identity h3 {
+    font-size: 13px;
+}
+
+
+.job-id {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #687486;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 9px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.job-status {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+.job-status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+
+.job-queued {
+    color: #aeb8c6;
+}
+
+
+.job-queued .job-status-dot {
+    background: #aeb8c6;
+}
+
+
+.job-running {
+    color: #b7c8df;
+}
+
+
+.job-running .job-status-dot {
+    background: #8fa9ca;
+}
+
+
+.job-completed {
+    color: #9de5c5;
+}
+
+
+.job-completed .job-status-dot {
+    background: #6ee7b7;
+}
+
+
+.job-failed,
+.job-cancelled {
+    color: #dba3a3;
+}
+
+
+.job-failed .job-status-dot,
+.job-cancelled .job-status-dot {
+    background: #d77f7f;
+}
+
+
+.job-body {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1.5fr)
+        minmax(100px, 0.5fr)
+        minmax(180px, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 18px;
+    padding-top: 16px;
+
+    border-top: 1px solid #202936;
+}
+
+
+.job-body span,
+.assignment-grid span {
+    display: block;
+
+    color: #687486;
+
+    font-size: 9px;
+}
+
+
+.job-body strong,
+.assignment-grid strong {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #bfc8d5;
+
+    font-size: 11px;
+    font-weight: 500;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ========================= */
+/* Scheduler */
+/* ========================= */
+
+.assignment-container {
+    padding: 0 18px 18px;
+}
+
+
+.assignment-card {
+    padding: 20px;
+
+    border: 1px solid #283342;
+    border-radius: 10px;
+
+    background: #111721;
+}
+
+
+.assignment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding-bottom: 17px;
+
+    border-bottom: 1px solid #202936;
+}
+
+
+.assignment-header h3 {
+    margin-top: 6px;
+
+    font-size: 16px;
+}
+
+
+.assignment-status {
+    padding: 6px 9px;
+
+    border: 1px solid #293342;
+    border-radius: 6px;
+
+    color: #9de5c5;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+.assignment-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 15px;
+
+    margin-top: 18px;
+}
+
+
+.assignment-grid > div {
+    min-width: 0;
+}
+
+
+.pipeline {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 22px;
+}
+
+
+.pipeline-step {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    color: #aeb8c6;
+
+    font-size: 11px;
+}
+
+
+.pipeline-step span {
+    width: 25px;
+    height: 25px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid #303a4a;
+    border-radius: 50%;
+
+    color: #c9d1dc;
+
+    font-size: 9px;
+}
+
+
+.pipeline-arrow {
+    color: #4d5868;
+
+    font-size: 16px;
+}
+
+
+/* ========================= */
+/* Responsive Jobs */
+/* ========================= */
+
+@media (max-width: 900px) {
+
+    .job-body {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .assignment-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .job-form,
+    .scheduler-form {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .job-body {
+        grid-template-columns: 1fr;
+    }
+
+    .assignment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pipeline {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pipeline-arrow {
+        transform: rotate(90deg);
+    }
+
+}
+
+
+
+/* ========================= */
+/* Execution */
+/* ========================= */
+
+.execution-output {
+    margin-top: 20px;
+    padding-top: 18px;
+
+    border-top: 1px solid #202936;
+}
+
+.execution-output > span,
+.execution-error > span {
+    display: block;
+
+    color: #687486;
+
+    font-size: 10px;
+}
+
+
+.execution-output pre,
+.execution-error pre {
+    margin-top: 8px;
+
+    padding: 14px;
+
+    overflow-x: auto;
+
+    border: 1px solid #202936;
+    border-radius: 8px;
+
+    background: #0b1017;
+
+    color: #aeb8c6;
+
+    font-family:
+        "Cascadia Code",
+        "Consolas",
+        monospace;
+
+    font-size: 10px;
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+.execution-error {
+    margin-top: 14px;
+    padding-top: 14px;
+
+    border-top: 1px solid #202936;
+}
+
+
+.execution-error pre {
+    color: #dba3a3;
+}
