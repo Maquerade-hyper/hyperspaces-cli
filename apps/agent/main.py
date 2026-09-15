@@ -89,7 +89,7 @@ def main():
     # =====================================================
 
     tcp_transport = TCPTransport(
-        host="0.0.0.0",
+        host="::",
         port=node.port,
         security=security,
     )

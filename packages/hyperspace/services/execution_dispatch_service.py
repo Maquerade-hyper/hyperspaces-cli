@@ -5,8 +5,15 @@ from hyperspace.services.security_identity_service import SecurityIdentityServic
 
 class ExecutionDispatchService:
 
-    def __init__(self, transport=None, security_identity=None):
-        self.transport = transport or TCPTransport()
+    def __init__(
+        self,
+        transport=None,
+        security_identity=None,
+        security=None,
+    ):
+        self.transport = transport or TCPTransport(
+            security=security,
+        )
         self.security_identity = (
             security_identity or SecurityIdentityService()
         )

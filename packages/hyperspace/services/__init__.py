@@ -142,6 +142,115 @@ from hyperspace.services.security_integration_service import (
     SecurityIntegrationService,
 )
 
+from .bootstrap_service import (
+    BootstrapService,
+    BootstrapServiceResult,
+    bootstrap_node,
+)
+
+from .join_payload_service import (
+    JoinPayload,
+    JoinPayloadService,
+    create_join_payload,
+)
+
+from .controller_discovery_service import (
+    ControllerDiscoveryService,
+    DiscoveredController,
+    discover_controller,
+)
+
+from .controller_endpoint_service import (
+    ControllerEndpoint,
+    ControllerEndpointService,
+    resolve_controller_endpoint,
+)
+
+from .dynamic_join_service import (
+    DynamicJoinService,
+    DynamicJoinTarget,
+    resolve_join_target,
+)
+
+from .join_target_resolver_service import (
+    JoinTargetResolverService,
+    resolve_join_controller,
+)
+
+from .one_command_bootstrap_service import (
+    OneCommandBootstrapService,
+    OneCommandBootstrapResult,
+    prepare_one_command_bootstrap,
+)
+
+from .bootstrap_state_service import (
+    BootstrapState,
+    BootstrapStateService,
+    get_bootstrap_state,
+)
+
+from .wan_connection_service import (
+    WANConnectionResult,
+    WANConnectionService,
+    connect_wan,
+)
+
+from .wan_coordinator_service import (
+    WANNodeRecord,
+    WANCoordinatorService,
+    register_wan_node,
+)
+
+from .wan_connection_manager_service import (
+    WANConnectionManagerResult,
+    WANConnectionManagerService,
+    connect_wan_node,
+)
+
+from .wan_handshake_service import (
+    WANHandshakeResult,
+    WANHandshakeService,
+    handshake_wan_node,
+)
+
+from .nat_detection_service import (
+    NATDetectionResult,
+    NATDetectionService,
+    detect_nat_network,
+)
+
+from .nat_traversal_service import (
+    NetworkCandidate,
+    CandidateExchangeResult,
+    CandidateExchangeService,
+    HolePunchResult,
+    UDPHolePunchService,
+    NATTraversalResult,
+    NATTraversalService,
+    create_network_candidate,
+)
+
+from .relay_service import (
+    RelaySession,
+    RelayResult,
+    RelayProtocol,
+    RelayServer,
+    RelayClient,
+    RelayFallbackResult,
+    RelayConnectionManager,
+    create_relay_server,
+    create_relay_client,
+)
+
+from .multi_tenant_service import (
+    Tenant,
+    Project,
+    APIKey,
+    UsageRecord,
+    APIKeyValidation,
+    MultiTenantService,
+)
+
 __all__ = [
     "AuthenticationService",
     "GPUService",
@@ -172,5 +281,22 @@ __all__ = [
     "PermissionService",
     "Permission",
     "Role",
+    "BootstrapService",
+    "BootstrapServiceResult",
+    "bootstrap_node",
+    "JoinPayload",
+    "JoinPayloadService",
+    "create_join_payload",
+    "ControllerDiscoveryService",
+    "DiscoveredController",
+    "discover_controller",
+    "ControllerEndpoint",
+    "ControllerEndpointService",
+    "resolve_controller_endpoint",
+    "DynamicJoinService",
+    "DynamicJoinTarget",
+    "resolve_join_target",
+    "JoinTargetResolverService",
+    "resolve_join_controller",
 
 ]

@@ -140,8 +140,19 @@ class TCPTransport:
             Permission,
         )
 
+        # M21 — support IPv4 and IPv6.
+        #
+        # "::" creates an IPv6 socket. IPV6_V6ONLY=0 allows
+        # IPv4-mapped connections as well on Windows.
+        if self.host == "::":
+            address_family = socket.AF_INET6
+            bind_address = ("::", self.port)
+        else:
+            address_family = socket.AF_INET
+            bind_address = (self.host, self.port)
+
         with socket.socket(
-            socket.AF_INET,
+            address_family,
             socket.SOCK_STREAM,
         ) as server:
 
@@ -151,8 +162,21 @@ class TCPTransport:
                 1,
             )
 
+            if address_family == socket.AF_INET6:
+                try:
+                    server.setsockopt(
+                        socket.IPPROTO_IPV6,
+                        socket.IPV6_V6ONLY,
+                        0,
+                    )
+                except OSError:
+                    # Some operating systems do not allow
+                    # changing this option. The IPv6 listener
+                    # can still operate as IPv6-only.
+                    pass
+
             server.bind(
-                (self.host, self.port)
+                bind_address
             )
 
             server.listen()

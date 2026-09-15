@@ -1,112 +1,202 @@
+from __future__ import annotations
+
 import json
 import secrets
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from hyperspace.infrastructure.runtime import RuntimePaths
-
-from hyperspace.services.mesh_controller_service import MeshControllerService
+from hyperspace.services.mesh_controller_service import (
+    MeshControllerService,
+)
 
 
 class MeshInviteService:
-    def __init__(self, storage_path: str | None = None):
-        if storage_path is None:
-            storage_path = str(
-                RuntimePaths().path(
-                    "mesh",
-                    "mesh_invites.json",
-                )
-            )
+    """
+    Creates and validates mesh invitations.
 
-        self.storage_path = Path(storage_path)
+    Invitations are persisted locally so they survive
+    process restarts.
+    """
 
-    def _load_invites(self) -> dict:
-        if not self.storage_path.exists():
-            return {}
+    DEFAULT_EXPIRY_MINUTES = 30
 
-        return json.loads(
-            self.storage_path.read_text(
-                encoding="utf-8"
-            )
+    def __init__(
+        self,
+        storage_path: str | Path | None = None,
+        controller: MeshControllerService | None = None,
+    ):
+        runtime_paths = RuntimePaths()
+        runtime_paths.ensure_directories()
+
+        self.storage_path = Path(
+            storage_path
+            if storage_path is not None
+            else runtime_paths.mesh_dir
+            / "mesh_invites.json"
         )
 
-    def _save_invites(self, invites: dict) -> None:
         self.storage_path.parent.mkdir(
             parents=True,
             exist_ok=True,
         )
 
-        self.storage_path.write_text(
-            json.dumps(
-                invites,
-                indent=2,
-            ),
-            encoding="utf-8",
+        self.controller = (
+            controller
+            or MeshControllerService()
         )
 
-    def create_invite(self, expires_minutes: int = 30) -> dict:
+    def _load(self) -> list[dict]:
+        if not self.storage_path.exists():
+            return []
+
+        try:
+            with self.storage_path.open(
+                "r",
+                encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            if not isinstance(data, list):
+                return []
+
+            return data
+
+        except (
+            OSError,
+            json.JSONDecodeError,
+        ):
+            return []
+
+    def _save(
+        self,
+        invites: list[dict],
+    ) -> None:
+        with self.storage_path.open(
+            "w",
+            encoding="utf-8",
+        ) as file:
+            json.dump(
+                invites,
+                file,
+                indent=2,
+            )
+
+    def create_invite(
+        self,
+        expires_in_minutes: int | None = None,
+    ) -> dict:
         mesh = self.controller.get_mesh()
 
         if mesh is None:
             raise ValueError(
-                "No mesh exists on this controller."
+                "No Hyperspace mesh exists."
             )
 
-        token = secrets.token_urlsafe(32)
+        minutes = (
+            expires_in_minutes
+            if expires_in_minutes is not None
+            else self.DEFAULT_EXPIRY_MINUTES
+        )
+
+        if minutes <= 0:
+            raise ValueError(
+                "Invitation expiry must be greater than zero."
+            )
+
+        now = datetime.now(timezone.utc)
 
         expires_at = (
-            datetime.now(timezone.utc)
-            + timedelta(minutes=expires_minutes)
+            now
+            + timedelta(minutes=minutes)
         )
 
         invite = {
-            "token": token,
+            "token": secrets.token_urlsafe(32),
             "mesh_id": mesh.mesh_id,
             "mesh_name": mesh.name,
+            "created_at": now.isoformat(),
             "expires_at": expires_at.isoformat(),
             "used": False,
         }
 
-        invites = self._load_invites()
-        invites[token] = invite
-        self._save_invites(invites)
+        invites = self._load()
+        invites.append(invite)
+        self._save(invites)
 
         return invite
 
-    def validate_invite(self, token: str) -> dict:
-        invites = self._load_invites()
+    def validate_token(
+        self,
+        token: str,
+    ) -> dict | None:
+        if not token:
+            return None
 
-        invite = invites.get(token)
+        invites = self._load()
+        now = datetime.now(timezone.utc)
 
-        if invite is None:
-            raise ValueError(
-                "Invalid invite token."
-            )
+        for invite in invites:
+            if invite.get("token") != token:
+                continue
 
-        if invite["used"]:
-            raise ValueError(
-                "Invite token has already been used."
-            )
+            if invite.get("used", False):
+                return None
 
-        expires_at = datetime.fromisoformat(
-            invite["expires_at"]
-        )
+            try:
+                expires_at = datetime.fromisoformat(
+                    invite["expires_at"]
+                )
+            except (
+                KeyError,
+                ValueError,
+                TypeError,
+            ):
+                return None
 
-        if datetime.now(timezone.utc) >= expires_at:
-            raise ValueError(
-                "Invite token has expired."
-            )
+            if now >= expires_at:
+                return None
 
-        return invite
+            return invite
 
-    def consume_invite(self, token: str) -> dict:
-        invites = self._load_invites()
+        return None
 
-        invite = self.validate_invite(token)
+    def consume_token(
+        self,
+        token: str,
+    ) -> dict | None:
+        invites = self._load()
+        now = datetime.now(timezone.utc)
 
-        invite["used"] = True
+        for invite in invites:
+            if invite.get("token") != token:
+                continue
 
-        invites[token] = invite
-        self._save_invites(invites)
+            if invite.get("used", False):
+                return None
 
-        return invite
+            try:
+                expires_at = datetime.fromisoformat(
+                    invite["expires_at"]
+                )
+            except (
+                KeyError,
+                ValueError,
+                TypeError,
+            ):
+                return None
+
+            if now >= expires_at:
+                return None
+
+            invite["used"] = True
+            invite["used_at"] = now.isoformat()
+
+            self._save(invites)
+
+            return invite
+
+        return None
+
+    def list_invites(self) -> list[dict]:
+        return self._load()

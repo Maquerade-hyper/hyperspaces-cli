@@ -11,7 +11,7 @@ class MeshJoinService:
         membership=None,
     ):
         self.controller = controller or MeshControllerService()
-        self.invites = invites or MeshInviteService(self.controller)
+        self.invites = invites or MeshInviteService(controller=self.controller)
         self.membership = membership or MeshMembershipService()
 
     def process_join_request(self, request: dict) -> dict:
@@ -25,7 +25,7 @@ class MeshJoinService:
             }
 
         try:
-            invite = self.invites.validate_invite(token)
+            invite = self.invites.validate_token(token)
         except ValueError as exc:
             return {
                 "message_type": "mesh_join_response",
@@ -49,7 +49,7 @@ class MeshJoinService:
             port=request["port"],
         )
 
-        self.invites.consume_invite(token)
+        self.invites.consume_token(token)
 
         return {
             "message_type": "mesh_join_response",

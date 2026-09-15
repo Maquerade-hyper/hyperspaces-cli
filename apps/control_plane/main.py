@@ -7,15 +7,17 @@ from hyperspace.services.node_registry_service import NodeRegistryService
 from hyperspace.services.resource_provider_service import ResourceProviderService
 from hyperspace.services.mesh_membership_service import MeshMembershipService
 
-from hyperspace.services.security_identity_service import SecurityIdentityService
-from hyperspace.services.security_integration_service import SecurityIntegrationService
+from hyperspace.services.security_identity_service import (
+    SecurityIdentityService,
+)
+from hyperspace.services.security_integration_service import (
+    SecurityIntegrationService,
+)
 from hyperspace.services.permission_service import Role
 
 from hyperspace.core.models import Job
 
 from hyperspace.services import DistributedPartitionService
-
-from hyperspace.infrastructure.runtime import bootstrap_runtime
 
 
 # =========================================================
@@ -46,12 +48,20 @@ app.add_middleware(
 
 
 # =========================================================
+# SECURITY
+# =========================================================
+
+security_identity = SecurityIdentityService()
+security = SecurityIntegrationService()
+
+
+# =========================================================
 # CONTROLLER
 # =========================================================
 
-bootstrap_runtime()
-
-controller = ControllerService()
+controller = ControllerService(
+    security=security,
+)
 
 node_identity = NodeIdentityService()
 node_registry = NodeRegistryService()
@@ -63,14 +73,6 @@ membership = MeshMembershipService()
 
 
 # =========================================================
-# SECURITY
-# =========================================================
-
-security_identity = SecurityIdentityService()
-security = SecurityIntegrationService()
-
-
-# =========================================================
 # LOCAL CONTROLLER NODE BOOTSTRAP
 # =========================================================
 
@@ -79,12 +81,12 @@ def bootstrap_local_node():
     Bootstrap the local Hyperspace controller node.
 
     Responsibilities:
-    - Load/create node identity
-    - Load/create security identity
-    - Register controller as trusted
-    - Register node
-    - Restore mesh membership
-    - Register local resources
+        - Load/create node identity
+        - Load/create security identity
+        - Register controller security identity
+        - Register node
+        - Restore mesh membership
+        - Register local resources
     """
 
     # -----------------------------------------------------
@@ -99,9 +101,22 @@ def bootstrap_local_node():
 
     identity = security_identity.get_identity()
 
+    # Register the local controller using the SAME
+    # SecurityIntegrationService instance used by
+    # ControllerService -> TCPTransport.
     security.register_node(
         identity,
         Role.CONTROLLER,
+    )
+    
+    print(
+        f"Security trusted: "
+        f"{security.is_trusted(identity.node_id, identity.fingerprint)}"
+    )
+
+    print(
+        f"Trusted nodes: "
+        f"{security.authentication.trusted_nodes()}"
     )
 
     # -----------------------------------------------------
@@ -114,7 +129,9 @@ def bootstrap_local_node():
     # Mesh membership
     # -----------------------------------------------------
 
-    member = membership.get(node.node_id)
+    member = membership.get(
+        node.node_id
+    )
 
     if member is None:
         member = membership.request_join(
@@ -152,6 +169,7 @@ def bootstrap_local_node():
 
 
 # Bootstrap local controller node when API starts.
+
 local_node = bootstrap_local_node()
 
 
@@ -203,9 +221,13 @@ def list_nodes():
 
 
 @app.get("/api/nodes/{node_id}")
-def get_node(node_id: str):
+def get_node(
+    node_id: str,
+):
 
-    node = node_registry.get(node_id)
+    node = node_registry.get(
+        node_id
+    )
 
     if node is None:
         raise HTTPException(
@@ -238,7 +260,10 @@ def list_resources():
 @app.get("/api/resources/available")
 def available_resources():
 
-    resources = controller.resource_pool.available_resources()
+    resources = (
+        controller.resource_pool
+        .available_resources()
+    )
 
     return (
         resources.model_dump()
@@ -250,7 +275,10 @@ def available_resources():
 @app.get("/api/resources/cluster")
 def cluster_resources():
 
-    resources = controller.resource_pool.cluster_totals()
+    resources = (
+        controller.resource_pool
+        .cluster_totals()
+    )
 
     return (
         resources.model_dump()
@@ -264,15 +292,24 @@ def cluster_resources():
 # =========================================================
 
 @app.post("/api/jobs")
-def submit_job(payload: dict):
+def submit_job(
+    payload: dict,
+):
 
     try:
 
-        job = Job(**payload)
+        job = Job(
+            **payload
+        )
 
-        result = controller.jobs.submit(job)
+        result = controller.jobs.submit(
+            job
+        )
 
-        if hasattr(result, "model_dump"):
+        if hasattr(
+            result,
+            "model_dump",
+        ):
             return result.model_dump()
 
         return result
@@ -294,7 +331,10 @@ def list_jobs():
         "count": len(jobs),
         "jobs": [
             job.model_dump()
-            if hasattr(job, "model_dump")
+            if hasattr(
+                job,
+                "model_dump",
+            )
             else job
             for job in jobs
         ],
@@ -302,11 +342,16 @@ def list_jobs():
 
 
 @app.get("/api/jobs/{job_id}")
-def get_job(job_id: str):
+def get_job(
+    job_id: str,
+):
 
-    job = controller.get_job(job_id)
+    job = controller.get_job(
+        job_id
+    )
 
     if job is None:
+
         raise HTTPException(
             status_code=404,
             detail=f"Job '{job_id}' not found.",
@@ -314,21 +359,31 @@ def get_job(job_id: str):
 
     return (
         job.model_dump()
-        if hasattr(job, "model_dump")
+        if hasattr(
+            job,
+            "model_dump",
+        )
         else job
     )
 
 
 @app.post("/api/jobs/{job_id}/cancel")
-def cancel_job(job_id: str):
+def cancel_job(
+    job_id: str,
+):
 
     try:
 
-        result = controller.jobs.cancel(job_id)
+        result = controller.jobs.cancel(
+            job_id
+        )
 
         return (
             result.model_dump()
-            if hasattr(result, "model_dump")
+            if hasattr(
+                result,
+                "model_dump",
+            )
             else result
         )
 
@@ -345,13 +400,18 @@ def cancel_job(job_id: str):
 # =========================================================
 
 @app.post("/api/scheduler/assign")
-def assign_job(payload: dict):
+def assign_job(
+    payload: dict,
+):
 
     try:
 
-        job_id = payload.get("job_id")
+        job_id = payload.get(
+            "job_id"
+        )
 
         if not job_id:
+
             raise ValueError(
                 "job_id is required."
             )
@@ -361,13 +421,17 @@ def assign_job(payload: dict):
         )
 
         if assignment is None:
+
             raise ValueError(
                 "No suitable node was found."
             )
 
         return (
             assignment.model_dump()
-            if hasattr(assignment, "model_dump")
+            if hasattr(
+                assignment,
+                "model_dump",
+            )
             else assignment
         )
 
@@ -379,22 +443,33 @@ def assign_job(payload: dict):
         )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # EXECUTION
-# ---------------------------------------------------------
+# =========================================================
 
 @app.post("/api/execution")
-def execute_job(payload: dict):
+def execute_job(
+    payload: dict,
+):
+
     try:
-        job_id = payload.get("job_id")
-        assignment = payload.get("assignment")
+
+        job_id = payload.get(
+            "job_id"
+        )
+
+        assignment = payload.get(
+            "assignment"
+        )
 
         if not job_id:
+
             raise ValueError(
                 "job_id is required."
             )
 
         if not assignment:
+
             raise ValueError(
                 "assignment is required."
             )
@@ -404,6 +479,7 @@ def execute_job(payload: dict):
         )
 
         if not node_id:
+
             raise ValueError(
                 "assignment.node_id is required."
             )
@@ -418,6 +494,7 @@ def execute_job(payload: dict):
         )
 
         if node is None:
+
             raise ValueError(
                 f"Node not found: {node_id}"
             )
@@ -434,11 +511,17 @@ def execute_job(payload: dict):
             node=node_data,
         )
 
-        if hasattr(result, "model_dump"):
+        if hasattr(
+            result,
+            "model_dump",
+        ):
+
             result_data = result.model_dump(
                 mode="json"
             )
+
         else:
+
             result_data = result
 
         artifacts = (
@@ -454,14 +537,17 @@ def execute_job(payload: dict):
 
             if hasattr(
                 artifact,
-                "model_dump"
+                "model_dump",
             ):
+
                 artifact_data.append(
                     artifact.model_dump(
                         mode="json"
                     )
                 )
+
             else:
+
                 artifact_data.append(
                     artifact
                 )
@@ -490,8 +576,12 @@ def execute_job(payload: dict):
 # FAULT-TOLERANT EXECUTION
 # =========================================================
 
-@app.post("/api/execution/fault-tolerant")
-def execute_fault_tolerantly(payload: dict):
+@app.post(
+    "/api/execution/fault-tolerant"
+)
+def execute_fault_tolerantly(
+    payload: dict,
+):
 
     try:
 
@@ -517,10 +607,9 @@ def execute_fault_tolerantly(payload: dict):
             )
         )
 
-
         if hasattr(
             result,
-            "model_dump"
+            "model_dump",
         ):
 
             result_data = result.model_dump(
@@ -531,7 +620,6 @@ def execute_fault_tolerantly(payload: dict):
 
             result_data = result
 
-
         artifacts = (
             controller.execution
             .get_job_artifacts(
@@ -539,15 +627,13 @@ def execute_fault_tolerantly(payload: dict):
             )
         )
 
-
         artifact_data = []
-
 
         for artifact in artifacts:
 
             if hasattr(
                 artifact,
-                "model_dump"
+                "model_dump",
             ):
 
                 artifact_data.append(
@@ -562,7 +648,6 @@ def execute_fault_tolerantly(payload: dict):
                     artifact
                 )
 
-
         result_data["artifacts"] = (
             artifact_data
         )
@@ -573,9 +658,7 @@ def execute_fault_tolerantly(payload: dict):
             else None
         )
 
-
         return result_data
-
 
     except Exception as exc:
 
@@ -589,28 +672,44 @@ def execute_fault_tolerantly(payload: dict):
 # DISTRIBUTED EXECUTION
 # =========================================================
 
-@app.post("/api/execution/distributed")
-def execute_distributed(payload: dict):
+@app.post(
+    "/api/execution/distributed"
+)
+def execute_distributed(
+    payload: dict,
+):
 
     try:
-        job_id = payload.get("job_id")
+
+        job_id = payload.get(
+            "job_id"
+        )
+
         partition_count = int(
-            payload.get("partition_count", 1)
+            payload.get(
+                "partition_count",
+                1,
+            )
         )
 
         if not job_id:
+
             raise ValueError(
                 "job_id is required."
             )
 
         if partition_count < 1:
+
             raise ValueError(
                 "partition_count must be at least 1."
             )
 
-        job = controller.jobs.get(job_id)
+        job = controller.jobs.get(
+            job_id
+        )
 
         if job is None:
+
             raise ValueError(
                 f"Job not found: {job_id}"
             )
@@ -634,7 +733,9 @@ def execute_distributed(payload: dict):
 
         for node in registered_nodes:
 
-            available_nodes[node.node_id] = {
+            available_nodes[
+                node.node_id
+            ] = {
                 "node_id": node.node_id,
                 "host": node.ip_address,
                 "port": node.port,
@@ -669,7 +770,8 @@ def execute_distributed(payload: dict):
         ):
 
             node_id = selected_node_ids[
-                index % len(selected_node_ids)
+                index
+                % len(selected_node_ids)
             ]
 
             partition.assigned_node_id = (
@@ -681,8 +783,10 @@ def execute_distributed(payload: dict):
             )
 
         nodes = {
-            node_id: available_nodes[node_id]
-            for node_id in selected_node_ids
+            node_id:
+                available_nodes[node_id]
+            for node_id
+            in selected_node_ids
         }
 
         results = (
@@ -699,7 +803,7 @@ def execute_distributed(payload: dict):
 
             if hasattr(
                 result,
-                "model_dump"
+                "model_dump",
             ):
 
                 result_data.append(
@@ -727,7 +831,7 @@ def execute_distributed(payload: dict):
 
             if hasattr(
                 artifact,
-                "model_dump"
+                "model_dump",
             ):
 
                 artifact_data.append(
@@ -803,10 +907,11 @@ def list_artifacts():
             )
             if hasattr(
                 artifact,
-                "model_dump"
+                "model_dump",
             )
             else artifact
-            for artifact in artifacts
+            for artifact
+            in artifacts
         ]
 
     except Exception as exc:
@@ -817,9 +922,11 @@ def list_artifacts():
         )
 
 
-@app.get("/api/artifacts/{artifact_id}")
+@app.get(
+    "/api/artifacts/{artifact_id}"
+)
 def get_artifact(
-    artifact_id: str
+    artifact_id: str,
 ):
 
     try:
@@ -841,7 +948,7 @@ def get_artifact(
 
         if hasattr(
             artifact,
-            "model_dump"
+            "model_dump",
         ):
 
             return artifact.model_dump(
@@ -858,9 +965,11 @@ def get_artifact(
         )
 
 
-@app.get("/api/jobs/{job_id}/artifacts")
+@app.get(
+    "/api/jobs/{job_id}/artifacts"
+)
 def list_job_artifacts(
-    job_id: str
+    job_id: str,
 ):
 
     try:
@@ -878,10 +987,11 @@ def list_job_artifacts(
             )
             if hasattr(
                 artifact,
-                "model_dump"
+                "model_dump",
             )
             else artifact
-            for artifact in artifacts
+            for artifact
+            in artifacts
         ]
 
     except Exception as exc:
@@ -901,7 +1011,7 @@ def list_gpus():
 
     try:
 
-        gpus = (
+        controller_gpus = (
             controller.execution
             .gpu_registry
             .list_all()
@@ -923,7 +1033,7 @@ def list_gpus():
 
             if hasattr(
                 gpu,
-                "model_dump"
+                "model_dump",
             ):
 
                 gpu_data = gpu.model_dump(
@@ -932,9 +1042,13 @@ def list_gpus():
 
             else:
 
-                gpu_data = dict(gpu)
+                gpu_data = dict(
+                    gpu
+                )
 
-            gpu_data["node_id"] = node_id
+            gpu_data["node_id"] = (
+                node_id
+            )
 
             result.append(
                 gpu_data
@@ -950,10 +1064,12 @@ def list_gpus():
         )
 
 
-@app.get("/api/gpus/{node_id}/{gpu_id}")
+@app.get(
+    "/api/gpus/{node_id}/{gpu_id}"
+)
 def get_gpu(
     node_id: str,
-    gpu_id: int
+    gpu_id: int,
 ):
 
     try:
@@ -976,7 +1092,7 @@ def get_gpu(
 
         if hasattr(
             gpu,
-            "model_dump"
+            "model_dump",
         ):
 
             gpu_data = gpu.model_dump(
@@ -985,9 +1101,13 @@ def get_gpu(
 
         else:
 
-            gpu_data = dict(gpu)
+            gpu_data = dict(
+                gpu
+            )
 
-        gpu_data["node_id"] = node_id
+        gpu_data["node_id"] = (
+            node_id
+        )
 
         return gpu_data
 
@@ -1007,8 +1127,11 @@ def get_gpu(
 def api_info():
 
     return {
-        "service": "hyperspace-controller",
-        "version": "0.5.0",
+        "service":
+            "hyperspace-controller",
+
+        "version":
+            "0.5.0",
 
         "endpoints": {
 
@@ -1043,7 +1166,12 @@ def api_info():
     }
 
 
+# =========================================================
+# DIRECT STARTUP
+# =========================================================
+
 if __name__ == "__main__":
+
     import uvicorn
 
     uvicorn.run(

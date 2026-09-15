@@ -27,10 +27,10 @@ class FaultTolerantExecutionService:
         max_retries: int = 3,
         failure_detection=None,
         node_isolation=None,
+        dispatcher_transport=None,
     ):
-
-        self.dispatcher = (
-            ExecutionDispatchService()
+        self.dispatcher = ExecutionDispatchService(
+            transport=dispatcher_transport,
         )
 
         self.failure_detection = (

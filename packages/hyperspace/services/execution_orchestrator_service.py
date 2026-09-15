@@ -30,6 +30,11 @@ from hyperspace.services.gpu_registry_service import (
 from hyperspace.services.gpu_allocation_service import (
     GPUAllocationService,
 )
+from hyperspace.services.execution_result_service import ExecutionResultService
+
+from hyperspace.services.execution_dispatch_service import ExecutionDispatchService
+
+# from hyperspace.services.execution_result_service import ExecutionResultService
 
 
 class ExecutionOrchestratorService:
@@ -38,26 +43,21 @@ class ExecutionOrchestratorService:
         self,
         gpu_registry=None,
         gpu_allocation=None,
+        dispatcher_transport=None,
     ):
-        self.dispatcher = ExecutionDispatchService()
-
-        self.results = ResultRegistryService()
-
-        self.artifacts = ArtifactRegistryService()
-
-        self.storage = ArtifactStorageService()
-
-        self.gpu_registry = (
-            gpu_registry
-            or GPURegistryService()
-        )
-
+        self.gpu_registry = gpu_registry or GPURegistryService()
         self.gpu_allocation = (
             gpu_allocation
             or GPUAllocationService(
                 registry=self.gpu_registry
             )
         )
+
+        self.dispatcher = ExecutionDispatchService(
+            transport=dispatcher_transport,
+        )
+
+        self.results = ExecutionResultService()
 
     # =====================================================
     # GPU ALLOCATION

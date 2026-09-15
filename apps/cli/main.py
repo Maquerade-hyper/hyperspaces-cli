@@ -9,6 +9,7 @@ from hyperspace.services import (
     MeshInviteService,
     MeshMembershipService,
     NodeIdentityService,
+    resolve_join_controller,
 )
 
 from hyperspace.infrastructure.networking.tcp_transport import (
@@ -16,6 +17,14 @@ from hyperspace.infrastructure.networking.tcp_transport import (
 )
 
 from hyperspace.infrastructure.runtime import bootstrap_runtime
+
+from hyperspace.services.bootstrap_state_service import (
+    BootstrapStateService,
+)
+
+from hyperspace.services.bootstrap_state_service import (
+    BootstrapStateService,
+)
 
 
 VERSION = "0.1.0"
@@ -144,7 +153,7 @@ def mesh_invite():
     controller = MeshControllerService()
 
     invites = MeshInviteService(
-        controller
+        controller=controller
     )
 
     try:
@@ -178,75 +187,77 @@ def mesh_invite():
         )
 
 
-def mesh_join(token: str):
+def mesh_join(
+    token: str,
+    controller_url: str | None = None,
+):
     identity = NodeIdentityService()
-
     node = identity.get_node()
-
-    discovery = DiscoveryService()
 
     print("Hyperspace Mesh Join")
     print("--------------------")
-    print(
-        "Searching for controller on LAN..."
-    )
+
+    if controller_url:
+        print("Using explicit controller...")
+    else:
+        print("Searching for controller on LAN...")
+
     print()
-
-    controller = discovery.discover_controller(
-        timeout=10
-    )
-
-    if controller is None:
-        print(
-            "No Hyperspace controller found on LAN."
-        )
-        return
-
-    controller_host = controller.get(
-        "ip_address"
-    )
-
-    controller_port = controller.get(
-        "port",
-        8765,
-    )
-
-    mesh_id = controller.get(
-        "mesh_id"
-    )
-
-    print(
-        "Controller discovered"
-    )
-    print(
-        "---------------------"
-    )
-    print(
-        f"Controller: "
-        f"{controller_host}:{controller_port}"
-    )
-    print(
-        f"Mesh ID:   {mesh_id}"
-    )
-    print(
-        f"Node ID:   {node.node_id}"
-    )
-    print()
-    print(
-        "Sending join request..."
-    )
-
-    payload = {
-        "message_type": "mesh_join_request",
-        "token": token,
-        "node_id": node.node_id,
-        "hostname": node.hostname,
-        "platform": node.platform,
-        "ip_address": node.ip_address,
-        "port": node.port,
-    }
 
     try:
+        from urllib.parse import urlparse
+
+        resolved_controller = resolve_join_controller(
+            controller_url=controller_url,
+            timeout=10,
+        )
+
+        parsed = urlparse(
+            resolved_controller
+        )
+
+        controller_host = parsed.hostname
+
+        if not controller_host:
+            raise RuntimeError(
+                "Invalid controller URL."
+            )
+
+        # IMPORTANT:
+        # Controller API = 8000
+        # Hyperspace TCP mesh transport = 8765
+        controller_port = 8765
+
+        print("Controller resolved")
+        print("-------------------")
+        print(
+            f"Controller: "
+            f"{controller_host}:{controller_port}"
+        )
+        print(
+            f"API:        "
+            f"{resolved_controller}"
+        )
+        print(
+            f"Node ID:   "
+            f"{node.node_id}"
+        )
+        print()
+
+        print(
+            "Sending join request..."
+        )
+
+        payload = {
+            "message_type": "mesh_join_request",
+            "token": token,
+            "node_id": node.node_id,
+            "hostname": node.hostname,
+            "platform": node.platform,
+            "ip_address": node.ip_address,
+            "port": node.port,
+        }
+
         transport = TCPTransport()
 
         response = transport.send_json(
@@ -258,31 +269,51 @@ def mesh_join(token: str):
         print()
         print("Join Response")
         print("-------------")
-        print(
-            f"Accepted: "
-            f"{response.get('accepted')}"
-        )
-        print(
-            f"Status:   "
-            f"{response.get('status')}"
-        )
-        print(
-            f"Mesh ID:  "
-            f"{response.get('mesh_id')}"
-        )
-        print(
-            f"Reason:   "
-            f"{response.get('reason')}"
-        )
+        print(response)
+
+        if isinstance(response, dict):
+            accepted = response.get("accepted")
+            status = response.get("status")
+            mesh_id = response.get("mesh_id")
+            reason = response.get("reason")
+
+            if accepted is not None:
+                print(
+                    f"Accepted: {accepted}"
+                )
+
+            if status is not None:
+                print(
+                    f"Status:   {status}"
+                )
+
+            if mesh_id is not None:
+                print(
+                    f"Mesh ID:  {mesh_id}"
+                )
+
+            if reason is not None:
+                print(
+                    f"Reason:   {reason}"
+                )
+
+        # M20.8.2
+        # Return the actual controller response so the
+        # caller can persist the successful join state.
+        return response
 
     except Exception as exc:
         print()
-        print(
-            "Join failed"
-        )
+        print("Join failed")
         print(
             f"Reason: {exc}"
         )
+
+        return {
+            "message_type": "error",
+            "accepted": False,
+            "reason": str(exc),
+        }
 
 
 def mesh_members():
@@ -1403,9 +1434,16 @@ def main():
     # BOOTSTRAP
     # ========================================================
 
-    subparsers.add_parser(
+    bootstrap_parser = subparsers.add_parser(
         "bootstrap",
         help="Initialize the local Hyperspace runtime",
+    )
+
+    bootstrap_parser.add_argument(
+        "--join",
+        metavar="TOKEN",
+        default=None,
+        help="Bootstrap this node and join a mesh using an invitation token",
     )
 
     subparsers.add_parser(
@@ -1507,6 +1545,11 @@ def main():
     mesh_subparsers.add_parser(
         "members",
         help="List mesh members",
+    )
+
+    mesh_subparsers.add_parser(
+        "join-payload",
+        help="Generate a portable mesh join payload",
     )
 
     approve_parser = (
@@ -1798,28 +1841,249 @@ def main():
             args.controller.rstrip("/")
         )
 
-    # ========================================================
+    # ============================================================
     # BOOTSTRAP
-    # ========================================================
+    # ============================================================
+
+
 
     if args.command == "bootstrap":
-        try:
-            result = bootstrap_runtime()
 
-            print("Hyperspace Runtime")
-            print("------------------")
-            print(f"Data directory: {result.data_dir}")
-            print(
-                f"Directories:    "
-                f"{'ready' if result.directories_created else 'failed'}"
+        try:
+
+            # ----------------------------------------------------
+            # M20.7 — ONE-COMMAND BOOTSTRAP + JOIN
+            # ----------------------------------------------------
+
+            if args.join:
+
+                from hyperspace.services.one_command_bootstrap_service import (
+                    prepare_one_command_bootstrap,
+                )
+
+                result = prepare_one_command_bootstrap()
+
+                print("========================================")
+                print("     HYPERSPACE ONE-COMMAND BOOTSTRAP")
+                print("========================================")
+                print()
+
+                print(
+                    f"Node ID          : "
+                    f"{result.node_id}"
+                )
+
+                print(
+                    f"Controller       : "
+                    f"{result.controller_url}"
+                )
+
+                print(
+                    f"Bootstrap        : "
+                    f"{'READY' if result.ready else 'FAILED'}"
+                )
+
+                print()
+
+                if not result.ready:
+                    print(
+                        "Bootstrap failed."
+                    )
+                    return
+
+                print(
+                    "Joining mesh..."
+                )
+                print()
+
+                join_response = mesh_join(
+                    args.join,
+                    controller_url=result.controller_url,
+                )
+
+                # M20.8.2 — Persist successful join state.
+                if isinstance(join_response, dict):
+                    accepted = join_response.get(
+                        "accepted"
+                    )
+
+                    if accepted is True:
+                        state_service = BootstrapStateService()
+
+                        state_service.mark_joined(
+                            node_id=result.node_id,
+                            mesh_id=join_response.get(
+                                "mesh_id",
+                                "",
+                            ),
+                            controller_url=(
+                                result.controller_url or ""
+                            ),
+                            status=join_response.get(
+                                "status",
+                                "approved",
+                            ),
+                        )
+
+                        print()
+                        print("Join state saved.")
+
+                return
+
+            # M20.8.2 — PERSIST SUCCESSFUL JOIN STATE
+            #
+            # mesh_join() prints the existing join response but
+            # does not return it. Therefore query the membership
+            # state through the existing controller API before
+            # persisting local state.
+            #
+            # We intentionally do not modify the frozen join flow.
+
+            state_service = BootstrapStateService()
+
+            try:
+                from hyperspace.services.mesh_membership_service import (
+                    MeshMembershipService,
+                )
+
+                membership = MeshMembershipService()
+
+                members = membership.list_members()
+
+                joined_member = None
+
+                for member in members:
+                    member_node_id = getattr(
+                        member,
+                        "node_id",
+                        None,
+                    )
+
+                    if member_node_id == result.node_id:
+                        joined_member = member
+                        break
+
+                if joined_member is not None:
+                    mesh_id = getattr(
+                        joined_member,
+                        "mesh_id",
+                        None,
+                    )
+
+                    status = getattr(
+                        joined_member,
+                        "status",
+                        None,
+                    )
+
+                    state_service.mark_joined(
+                        node_id=result.node_id,
+                        mesh_id=(
+                            str(mesh_id)
+                            if mesh_id
+                            else ""
+                        ),
+                        controller_url=(
+                            result.controller_url
+                            or ""
+                        ),
+                        status=(
+                            getattr(
+                                status,
+                                "value",
+                                str(status)
+                                if status is not None
+                                else "approved",
+                            )
+                        ),
+                    )
+
+                    print()
+                    print(
+                        "Join state saved."
+                    )
+
+                else:
+                    print()
+                    print(
+                        "Join accepted. "
+                        "Local join state was not persisted "
+                        "because membership state is not yet available."
+                    )
+
+            except Exception as exc:
+                print()
+                print(
+                    "Warning: could not persist join state: "
+                    f"{exc}"
+                )
+
+            return
+
+            # ----------------------------------------------------
+            # EXISTING BOOTSTRAP FLOW
+            # ----------------------------------------------------
+
+            from hyperspace.services.bootstrap_service import (
+                bootstrap_node,
             )
+
+            result = bootstrap_node()
+
+            print("========================================")
+            print("        HYPERSPACE BOOTSTRAP")
+            print("========================================")
+            print()
+
             print(
-                f"Configuration:  "
-                f"{'ready' if result.configuration_ready else 'failed'}"
+                f"Runtime          : "
+                f"{'READY' if result.runtime_ready else 'FAIL'}"
+            )
+
+            print(
+                f"Installation     : "
+                f"{'READY' if result.installation_ready else 'FAIL'}"
+            )
+
+            print(
+                f"Environment      : "
+                f"{'READY' if result.environment_ready else 'FAIL'}"
+            )
+
+            print(
+                f"Node Identity    : "
+                f"{'READY' if result.node_identity_ready else 'FAIL'}"
+            )
+
+            print(
+                f"Security         : "
+                f"{'READY' if result.security_identity_ready else 'FAIL'}"
+            )
+
+            print()
+
+            print(
+                f"Node ID          : "
+                f"{result.node_id or 'UNAVAILABLE'}"
+            )
+
+            print(
+                f"Data Directory   : "
+                f"{result.data_dir}"
+            )
+
+            print()
+
+            print(
+                f"Bootstrap        : "
+                f"{'READY' if result.ready else 'FAILED'}"
             )
 
         except Exception as exc:
-            print(f"Bootstrap failed: {exc}")
+            print(
+                "Bootstrap failed: "
+                f"{exc}"
+            )
 
         return
 
@@ -2100,6 +2364,8 @@ def main():
 
         return
 
+  
+
     # ========================================================
     # MESH
     # ========================================================
@@ -2110,34 +2376,75 @@ def main():
             mesh_create(
                 args.name
             )
+            return
 
-        elif args.mesh_command == "status":
+        if args.mesh_command == "status":
             mesh_status()
+            return
 
-        elif args.mesh_command == "invite":
+        if args.mesh_command == "invite":
             mesh_invite()
+            return
 
-        elif args.mesh_command == "join":
+        if args.mesh_command == "join":
             mesh_join(
-                args.token
+                args.token,
+                controller_url=CONTROLLER_API
+                if args.controller
+                else None,
             )
+            return
 
-        elif args.mesh_command == "members":
+        if args.mesh_command == "members":
             mesh_members()
+            return
 
-        elif args.mesh_command == "approve":
+        if args.mesh_command == "approve":
             mesh_approve(
                 args.node_id
             )
+            return
 
-        elif args.mesh_command == "reject":
+        if args.mesh_command == "reject":
             mesh_reject(
                 args.node_id
             )
+            return
 
-        else:
-            mesh_parser.print_help()
+        if args.mesh_command == "join-payload":
+            try:
+                from hyperspace.services.join_payload_service import (
+                    create_join_payload,
+                )
 
+                payload = create_join_payload()
+
+                print("Hyperspace Mesh Join Payload")
+                print("----------------------------")
+                print(f"Mesh:       {payload.mesh_name}")
+                print(f"Mesh ID:    {payload.mesh_id}")
+                print(
+                    f"Controller: "
+                    f"{payload.controller_host}:"
+                    f"{payload.controller_port}"
+                )
+                print(f"Expires:    {payload.expires_at}")
+                print()
+                print("Payload:")
+                print(payload.encode())
+
+            except ValueError as exc:
+                print(f"Error: {exc}")
+
+            except Exception as exc:
+                print(
+                    "Join payload generation failed: "
+                    f"{exc}"
+                )
+
+            return
+
+        mesh_parser.print_help()
         return
 
     # ========================================================
@@ -2382,6 +2689,52 @@ def main():
 
             print(
                 "GPU command failed: "
+                f"{exc}"
+            )
+
+        return
+
+    # ============================================================
+    # MESH JOIN PAYLOAD
+    # ============================================================
+
+    if (
+        args.command == "mesh"
+        and args.mesh_command == "join-payload"
+    ):
+        try:
+            from hyperspace.services.join_payload_service import (
+                create_join_payload,
+            )
+
+            payload = create_join_payload()
+
+            print("Hyperspace Mesh Join Payload")
+            print("----------------------------")
+            print(
+                f"Mesh:       {payload.mesh_name}"
+            )
+            print(
+                f"Mesh ID:    {payload.mesh_id}"
+            )
+            print(
+                f"Controller: "
+                f"{payload.controller_host}:"
+                f"{payload.controller_port}"
+            )
+            print(
+                f"Expires:    {payload.expires_at}"
+            )
+            print()
+            print("Payload:")
+            print(payload.encode())
+
+        except ValueError as exc:
+            print(f"Error: {exc}")
+
+        except Exception as exc:
+            print(
+                "Join payload generation failed: "
                 f"{exc}"
             )
 

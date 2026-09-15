@@ -18,12 +18,24 @@ from hyperspace.core.models import (
     ExecutionResult,
 )
 
+from hyperspace.services.security_integration_service import (
+    SecurityIntegrationService,
+)
+
 
 
 class ControllerService:
 
-    def __init__(self):
+    def __init__(
+        self,
+        security=None,
+    ):
         self.jobs = JobManagerService()
+
+        # ONE shared security service for the entire controller.
+        self.security = (
+            security or SecurityIntegrationService()
+        )
 
         # One registry shared by the controller's resource pool.
         self.resource_registry = ResourceRegistryService()
@@ -34,17 +46,22 @@ class ControllerService:
 
         self.scheduler = SchedulerService()
 
-        self.execution = ExecutionOrchestratorService()
-
-        self.fault_tolerant_execution = (
-            FaultTolerantExecutionService()
-        )
-
+        # One transport shared by all execution paths.
         self.transport = TCPTransport(
             resource_registry=self.resource_registry,
             membership=self.resource_pool.membership,
+            security=self.security,
         )
 
+        self.execution = ExecutionOrchestratorService(
+            dispatcher_transport=self.transport,
+        )
+
+        self.fault_tolerant_execution = (
+            FaultTolerantExecutionService(
+                dispatcher_transport=self.transport,
+            )
+        )
     # ---------------------------------------------------------
     # JOB
     # ---------------------------------------------------------
